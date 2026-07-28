@@ -1,0 +1,348 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Console — No. 412</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,300;6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#EDECE7; --paper-2:#E3E2DB; --ink:#1A1C1B; --ink-2:#56584F; --ink-3:#8B8D84;
+  --rule:#C9C8C0; --accent:#1F5F4B; --warn:#9C2A21;
+  --serif:"Newsreader",Georgia,serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --paper:#141513; --paper-2:#1D1E1C; --ink:#E7E5DB; --ink-2:#9B9C93; --ink-3:#6C6E66; --rule:#33342F; }
+}
+*{box-sizing:border-box}
+body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--mono);
+  font-size:15px; line-height:1.5; -webkit-font-smoothing:antialiased}
+.wrap{max-width:560px; margin:0 auto; padding:0 16px 80px}
+.lbl{font-size:10px; letter-spacing:.13em; text-transform:uppercase; color:var(--ink-3)}
+
+header{border-top:2px solid var(--ink); padding:9px 0 10px; margin-bottom:2px;
+  display:flex; justify-content:space-between; align-items:baseline; border-bottom:1px solid var(--rule)}
+
+details{border-bottom:1px solid var(--rule); padding:12px 0}
+summary{cursor:pointer; list-style:none; font-size:10px; letter-spacing:.13em;
+  text-transform:uppercase; color:var(--ink-3)}
+summary::-webkit-details-marker{display:none}
+summary:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+.tabs{display:flex; gap:18px; padding:16px 0 4px}
+.tabs button{background:none; border:0; padding:0 0 4px; cursor:pointer; color:var(--ink-3);
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  border-bottom:1px solid transparent}
+.tabs button[aria-pressed="true"]{color:var(--accent); border-bottom-color:var(--accent)}
+
+.field{padding:14px 0; border-bottom:1px solid var(--rule)}
+.field > .lbl{display:block; margin-bottom:7px}
+input,textarea,select{width:100%; background:transparent; color:var(--ink);
+  border:1px solid var(--rule); border-radius:0; padding:10px 11px;
+  font-family:var(--mono); font-size:16px; line-height:1.5}
+textarea{font-family:var(--serif); font-size:18px; line-height:1.5; min-height:110px; resize:vertical}
+input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)}
+.row{display:flex; gap:8px; flex-wrap:wrap}
+.row > *{flex:1; min-width:130px}
+.chips{display:flex; gap:7px; flex-wrap:wrap}
+.chip{border:1px solid var(--rule); padding:8px 12px; cursor:pointer; font-size:12px; color:var(--ink-2)}
+.chip[aria-pressed="true"]{border-color:var(--accent); color:var(--accent)}
+.hint{color:var(--ink-3); font-size:11px; margin-top:7px; line-height:1.6}
+
+.post{width:100%; margin-top:20px; padding:16px; cursor:pointer;
+  background:var(--ink); color:var(--paper); border:0;
+  font-family:var(--mono); font-size:12px; letter-spacing:.16em; text-transform:uppercase}
+.post:disabled{opacity:.4; cursor:default}
+.post.ghost{background:transparent; color:var(--ink-2); border:1px solid var(--rule); margin-top:9px}
+
+#say{position:sticky; bottom:0; background:var(--paper); border-top:2px solid var(--ink);
+  padding:12px 16px; font-size:12px; line-height:1.5}
+#say .lbl{display:block; margin-bottom:3px}
+.ok{color:var(--accent)} .bad{color:var(--warn)}
+</style>
+
+<div class="wrap">
+  <header>
+    <span class="lbl">console</span>
+    <a href="index.html" class="lbl" style="color:var(--ink-3)">view the page →</a>
+  </header>
+
+  <details id="cfg">
+    <summary>repository &amp; key</summary>
+    <div class="row" style="margin-top:12px">
+      <input id="owner" placeholder="github username" autocapitalize="off" autocorrect="off">
+      <input id="repo" placeholder="repo name" autocapitalize="off" autocorrect="off">
+    </div>
+    <div class="row" style="margin-top:8px">
+      <input id="branch" placeholder="branch (main)" autocapitalize="off" autocorrect="off">
+      <input id="token" type="password" placeholder="fine-grained token" autocapitalize="off" autocorrect="off">
+    </div>
+    <button class="post ghost" id="save">save on this device</button>
+    <div class="hint">The token stays in this browser and is never committed. Use a
+      <b>fine-grained</b> token limited to this one repo, with Contents set to read and write.
+      Anyone can open this page; nobody can post without their own key.</div>
+  </details>
+
+  <div class="tabs">
+    <button data-t="entry" aria-pressed="true">drop an entry</button>
+    <button data-t="state" aria-pressed="false">set your state</button>
+  </div>
+
+  <form id="entry" onsubmit="return false">
+    <div class="field">
+      <span class="lbl">the thing itself</span>
+      <textarea id="body" placeholder="what you actually thought"></textarea>
+    </div>
+    <div class="field">
+      <span class="lbl">what kind</span>
+      <div class="row">
+        <select id="kind">
+          <option value="thought">thought</option>
+          <option value="reading">reading</option>
+          <option value="opinion">opinion</option>
+          <option value="receipt">receipt</option>
+          <option value="dead">abandoned</option>
+          <option value="thread">thread</option>
+        </select>
+        <select id="done">
+          <option value="raw">raw</option>
+          <option value="marinating">marinating</option>
+          <option value="medium">medium</option>
+          <option value="burnt">burnt</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <span class="lbl">how long it lives</span>
+      <select id="half">
+        <option value="4">four days</option>
+        <option value="14">two weeks</option>
+        <option value="30">a month</option>
+        <option value="90">a season</option>
+        <option value="">forever</option>
+      </select>
+    </div>
+    <div class="field">
+      <span class="lbl">whose is it</span>
+      <div class="chips" id="egos"></div>
+    </div>
+    <details>
+      <summary>margin notes, revisions, scars</summary>
+      <div class="field" style="border:0">
+        <span class="lbl">margin (one per line)</span>
+        <textarea id="margin" style="font-family:var(--mono); font-size:14px; min-height:70px"
+          placeholder="p.140 / 350&#10;resentful"></textarea>
+      </div>
+      <div class="field">
+        <span class="lbl">the version you're replacing</span>
+        <input id="struck" placeholder="v2 — what you used to think">
+      </div>
+      <div class="field">
+        <span class="lbl">what changed your mind</span>
+        <input id="note" placeholder="lost an argument to someone with index cards">
+      </div>
+      <div class="field" style="border:0">
+        <span class="lbl">a push-back worth keeping</span>
+        <input id="scar" placeholder="the line someone sent you">
+      </div>
+    </details>
+    <button class="post" id="post-entry">commit to the page</button>
+    <button class="post ghost" id="copy-entry">copy the json instead</button>
+  </form>
+
+  <form id="state" hidden onsubmit="return false">
+    <div class="field">
+      <span class="lbl">the readout</span>
+      <textarea id="s-line" style="min-height:80px" placeholder="Two coffees deep. Avoiding taxes with real commitment."></textarea>
+    </div>
+    <div class="field">
+      <span class="lbl">gauges</span>
+      <div class="row">
+        <select id="s-energy"></select>
+        <select id="s-obsession"></select>
+      </div>
+    </div>
+    <div class="field">
+      <div class="row">
+        <input id="s-coffees" type="number" min="0" max="12" placeholder="coffees">
+        <input id="s-avoiding" placeholder="currently avoiding">
+      </div>
+    </div>
+    <button class="post" id="post-state">commit the state</button>
+    <div class="hint">Do this more often than you post. It's four fields and it's the thing
+      that makes the page feel inhabited.</div>
+  </form>
+</div>
+
+<div id="say">
+  <span class="lbl">status</span>
+  <span id="say-txt">Add your repo and key above, then write something.</span>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const say = (t, cls) => { $("say-txt").className = cls || ""; $("say-txt").textContent = t; };
+const store = {
+  get: k => { try { return localStorage.getItem(k) || ""; } catch (e) { return ""; } },
+  set: (k, v) => { try { localStorage.setItem(k, v); } catch (e) {} }
+};
+
+["owner","repo","branch","token"].forEach(k => $(k).value = store.get("n412." + k));
+if (!$("branch").value) $("branch").value = "main";
+if (!$("owner").value) $("cfg").open = true;
+
+$("save").onclick = () => {
+  ["owner","repo","branch","token"].forEach(k => store.set("n412." + k, $(k).value.trim()));
+  $("cfg").open = false;
+  say("Saved on this device.", "ok");
+  loadEgos();
+};
+
+[0,1,2,3,4,5,6].forEach(n => {
+  const bar = "▓".repeat(n) + "░".repeat(6 - n);
+  $("s-energy").add(new Option("energy " + bar, n));
+  $("s-obsession").add(new Option("obsession " + bar, n));
+});
+
+document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
+  $("entry").hidden = b.dataset.t !== "entry";
+  $("state").hidden = b.dataset.t !== "state";
+});
+
+/* ── github plumbing ───────────────────────────────────────── */
+const cfg = () => ({
+  owner: $("owner").value.trim(), repo: $("repo").value.trim(),
+  branch: $("branch").value.trim() || "main", token: $("token").value.trim()
+});
+const api = path => {
+  const c = cfg();
+  return "https://api.github.com/repos/" + c.owner + "/" + c.repo + "/contents/" + path;
+};
+const enc = str => {
+  const bytes = new TextEncoder().encode(str);
+  let bin = "";
+  bytes.forEach(b => bin += String.fromCharCode(b));
+  return btoa(bin);
+};
+const dec = b64 => new TextDecoder().decode(
+  Uint8Array.from(atob(b64.replace(/\s/g, "")), c => c.charCodeAt(0)));
+
+async function readFile(path) {
+  const c = cfg();
+  const res = await fetch(api(path) + "?ref=" + c.branch + "&t=" + Date.now(), {
+    headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json" }
+  });
+  if (!res.ok) throw new Error(path + " — " + (res.status === 404 ? "not found in that repo" :
+    res.status === 401 ? "the key was rejected" : "GitHub said " + res.status));
+  const j = await res.json();
+  return { sha: j.sha, data: JSON.parse(dec(j.content)) };
+}
+
+async function writeFile(path, obj, sha, message) {
+  const c = cfg();
+  const res = await fetch(api(path), {
+    method: "PUT",
+    headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json",
+               "Content-Type": "application/json" },
+    body: JSON.stringify({ message, content: enc(JSON.stringify(obj, null, 2) + "\n"),
+                           sha, branch: c.branch })
+  });
+  if (!res.ok) throw new Error("couldn't commit — GitHub said " + res.status);
+}
+
+/* ── egos come from the repo, not from here ────────────────── */
+let EGOS = {}, picked = [];
+async function loadEgos() {
+  const c = cfg();
+  if (!c.owner || !c.repo || !c.token) return;
+  try {
+    const { data } = await readFile("content.json");
+    EGOS = data.egos || {};
+    picked = Object.keys(EGOS).slice(0, 1);
+    $("egos").innerHTML = Object.keys(EGOS).map(k =>
+      `<span class="chip" role="button" tabindex="0" data-e="${k}"
+        aria-pressed="${picked.includes(k)}">${EGOS[k].label}</span>`).join("");
+    $("egos").querySelectorAll(".chip").forEach(ch => {
+      const flip = () => {
+        const k = ch.dataset.e;
+        picked = picked.includes(k) ? picked.filter(x => x !== k) : picked.concat(k);
+        ch.setAttribute("aria-pressed", picked.includes(k));
+      };
+      ch.onclick = flip;
+      ch.onkeydown = e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); flip(); } };
+    });
+    say("Connected. " + data.items.length + " entries on the page.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+}
+loadEgos();
+
+/* ── building an entry ─────────────────────────────────────── */
+const stamp = d => {
+  const p = n => String(n).padStart(2, "0");
+  return d.getFullYear() + "-" + p(d.getMonth() + 1) + "-" + p(d.getDate()) + "T" +
+         p(d.getHours()) + ":" + p(d.getMinutes()) + ":" + p(d.getSeconds());
+};
+function buildEntry() {
+  const now = new Date(), at = stamp(now);
+  const body = $("body").value.trim();
+  if (!body) { say("Nothing written yet.", "bad"); return null; }
+  const margin = $("margin").value.split("\n").map(s => s.trim()).filter(Boolean);
+  if (!margin.length) margin.push("[" + $("done").value + "]");
+  const it = {
+    id: "x" + now.getTime().toString(36),
+    kind: $("kind").value,
+    egos: picked.length ? picked : Object.keys(EGOS),
+    done: $("done").value,
+    half: $("half").value ? Number($("half").value) : null,
+    at, margin, body
+  };
+  ["struck","note","scar"].forEach(k => { const v = $(k).value.trim(); if (v) it[k] = v; });
+  return it;
+}
+function clearEntry() {
+  ["body","margin","struck","note","scar"].forEach(k => $(k).value = "");
+}
+
+$("post-entry").onclick = async () => {
+  const it = buildEntry(); if (!it) return;
+  $("post-entry").disabled = true; say("Committing…");
+  try {
+    const { sha, data } = await readFile("content.json");
+    data.items.unshift(it);
+    await writeFile("content.json", data, sha, "drop: " + it.body.slice(0, 60));
+    clearEntry();
+    say("Posted. Live in about thirty seconds.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+  $("post-entry").disabled = false;
+};
+
+$("copy-entry").onclick = async () => {
+  const it = buildEntry(); if (!it) return;
+  const text = JSON.stringify(it, null, 2) + ",";
+  try { await navigator.clipboard.writeText(text); say("Copied. Paste it at the top of items.", "ok"); }
+  catch (e) { $("margin").value = text; say("Clipboard blocked — the json is in the margin box.", "bad"); }
+};
+
+$("post-state").onclick = async () => {
+  if (!$("s-line").value.trim()) { say("The readout is empty.", "bad"); return; }
+  $("post-state").disabled = true; say("Committing…");
+  try {
+    const { sha } = await readFile("state.json");
+    const s = {
+      updated: stamp(new Date()),
+      line: $("s-line").value.trim(),
+      energy: Number($("s-energy").value),
+      obsession: Number($("s-obsession").value),
+      coffees: Number($("s-coffees").value || 0),
+      avoiding: $("s-avoiding").value.trim()
+    };
+    await writeFile("state.json", s, sha, "state: " + s.line.slice(0, 50));
+    say("State set. The bar reads differently now.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+  $("post-state").disabled = false;
+};
+</script>

@@ -1,0 +1,251 @@
+<!doctype html>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>No. 412 — a continuously issued document</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,300;0,6..72,400;0,6..72,500;1,6..72,300;1,6..72,400&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+
+<style>
+:root{
+  --paper:#EDECE7; --paper-2:#E3E2DB; --ink:#1A1C1B; --ink-2:#56584F; --ink-3:#8B8D84;
+  --rule:#C9C8C0; --accent:#1F5F4B;
+  --serif:"Newsreader",Georgia,"Times New Roman",serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  --body:var(--serif);
+  --measure:66ch;
+}
+@media (prefers-color-scheme:dark){
+  :root{ --paper:#141513; --paper-2:#1D1E1C; --ink:#E7E5DB; --ink-2:#9B9C93; --ink-3:#6C6E66; --rule:#33342F; }
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  background:var(--paper); color:var(--ink); font-family:var(--body);
+  min-height:100vh; display:flex; flex-direction:column;
+  -webkit-font-smoothing:antialiased; font-size:17px; line-height:1.55;
+}
+.wrap{width:100%; max-width:940px; margin:0 auto; padding:0 22px; flex:1}
+.mono{font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase}
+
+header{border-top:2px solid var(--ink); padding-top:9px}
+.head-row{display:flex; justify-content:space-between; align-items:baseline; gap:14px; flex-wrap:wrap;
+  color:var(--ink-2); padding-bottom:9px; border-bottom:1px solid var(--rule)}
+.dial{display:flex; gap:14px; align-items:baseline}
+.dial button{background:none; border:0; padding:0; cursor:pointer; color:var(--ink-3);
+  font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  border-bottom:1px solid transparent}
+.dial button:hover{color:var(--ink)}
+.dial button[aria-pressed="true"]{color:var(--accent); border-bottom-color:var(--accent)}
+.dial button:focus-visible{outline:2px solid var(--accent); outline-offset:3px}
+
+.state{padding:26px 0 22px; border-bottom:1px solid var(--rule); max-width:var(--measure)}
+.state p{margin:0; font-size:23px; line-height:1.35; font-weight:300; letter-spacing:-.01em}
+.state .gauges{margin-top:14px; display:flex; gap:22px; flex-wrap:wrap; color:var(--ink-3)}
+
+.entry{display:grid; grid-template-columns:132px minmax(0,1fr); gap:26px;
+  padding:20px 0; border-bottom:1px solid var(--rule); scroll-margin-top:20px}
+.entry .margin{color:var(--ink-3); text-align:right; line-height:2}
+.entry .text{max-width:var(--measure)}
+.entry .text p{margin:0; font-size:18px; line-height:1.55; font-weight:400}
+.entry .text p.mono-body{font-family:var(--mono); font-size:15px; letter-spacing:0; text-transform:none; line-height:1.7}
+.entry .struck{margin-top:7px; color:var(--ink-3); font-size:15px; line-height:1.5}
+.entry .struck s{text-decoration-thickness:1px}
+.entry .note{margin-top:7px; color:var(--ink-2); font-size:15px; line-height:1.5; font-style:italic}
+.entry .scar{margin-top:11px; padding-left:12px; border-left:2px solid var(--accent);
+  color:var(--ink-2); font-size:14px; line-height:1.5}
+.entry.flash{background:var(--paper-2)}
+
+.foot{padding:20px 0 30px; color:var(--ink-3); line-height:2.1}
+
+#bar{position:sticky; bottom:0; background:var(--paper); border-top:2px solid var(--ink); z-index:5}
+.bar-in{width:100%; max-width:940px; margin:0 auto; padding:11px 22px 13px;
+  display:flex; align-items:center; gap:16px; cursor:pointer}
+.bar-in:focus-visible{outline:2px solid var(--accent); outline-offset:-2px}
+.tick{width:9px; height:9px; border-radius:50%; background:var(--accent); flex:none}
+.bar-txt{flex:1; min-width:0}
+.bar-kind{color:var(--ink-3)}
+.bar-line{font-size:16px; line-height:1.4; margin-top:3px; font-weight:300}
+.bar-nav{color:var(--ink-3); text-align:right; flex:none; line-height:1.9}
+.drain{height:1px; background:var(--accent); width:0}
+
+@media (max-width:680px){
+  body{font-size:16px}
+  .wrap,.bar-in{padding-left:16px; padding-right:16px}
+  .entry{grid-template-columns:1fr; gap:7px}
+  .entry .margin{text-align:left; line-height:1.9}
+  .state p{font-size:20px}
+  .entry .text p{font-size:17px}
+  .bar-line{font-size:14px}
+}
+@media (prefers-reduced-motion:reduce){ .drain{display:none} }
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="head-row mono">
+      <span>No. <span id="issue">412</span> — issued continuously</span>
+      <span class="dial" id="dial"></span>
+      <span id="tally"></span>
+    </div>
+    <div class="state">
+      <p id="state-line">Loading the current state…</p>
+      <div class="gauges mono" id="gauges"></div>
+    </div>
+  </header>
+  <main id="page"></main>
+  <div class="foot mono" id="foot"></div>
+</div>
+
+<div id="bar">
+  <div class="drain" id="drain"></div>
+  <div class="bar-in" id="bar-in" role="button" tabindex="0" aria-label="Status readout. Activate to advance.">
+    <span class="tick" id="tick"></span>
+    <span class="bar-txt">
+      <span class="bar-kind mono" id="bar-kind"></span>
+      <div class="bar-line" id="bar-line"></div>
+    </span>
+    <span class="bar-nav mono" id="bar-nav"></span>
+  </div>
+</div>
+
+<script>
+const DAY = 864e5, now = new Date();
+const reduced = matchMedia("(prefers-reduced-motion:reduce)").matches;
+const smallHours = now.getHours() < 5;
+let STATE = {}, EGOS = {}, ITEMS = [];
+let ego = "all", touched = false, r = 0, timer = null, readings = [];
+
+/* state.json is your mood, content.json is your archive. Both are written
+   by post.html. Cache-busted so a fresh commit shows up immediately. */
+const grab = f => fetch(f + "?v=" + Date.now())
+  .then(res => { if (!res.ok) throw new Error(f + " " + res.status); return res.json(); });
+
+Promise.all([grab("state.json"), grab("content.json")])
+  .then(([s, c]) => {
+    STATE = s; EGOS = c.egos; ITEMS = c.items;
+    renderDial(); render();
+  })
+  .catch(err => {
+    document.getElementById("state-line").textContent = "Can't read the content files.";
+    document.getElementById("foot").innerHTML =
+      "If you opened this file directly from your desktop, that's why — browsers block local file reads. " +
+      "Run <code>python3 -m http.server</code> in this folder and visit localhost:8000, or push to GitHub Pages. " +
+      "Otherwise, check for a trailing comma. (" + err.message + ")";
+  });
+
+const clock = it => new Date(it.reupped || it.at);
+const ago = d => {
+  const m = (now - new Date(d)) / 6e4;
+  if (m < 60) return Math.max(1, Math.round(m)) + " min ago";
+  if (m < 1440) return Math.round(m / 60) + "h ago";
+  if (m < 43200) return Math.round(m / 1440) + "d ago";
+  return Math.round(m / 43200) + "mo ago";
+};
+const life = it => {
+  if (!it.half) return 1;
+  return Math.max(0, Math.min(1, 1 - (now - clock(it)) / (it.half * DAY)));
+};
+const ink = it => 0.3 + 0.7 * life(it);
+const bars = n => "▓".repeat(n) + "░".repeat(6 - n);
+const visible = () => ITEMS
+  .filter(i => ego === "all" || i.egos.includes(ego))
+  .filter(i => life(i) > 0)
+  .sort((a, b) => life(b) - life(a) || clock(b) - clock(a));
+
+function renderDial() {
+  const d = document.getElementById("dial");
+  d.innerHTML = ['<button data-e="all">all of it</button>']
+    .concat(Object.keys(EGOS).map(k => `<button data-e="${k}">${EGOS[k].label}</button>`)).join("");
+  d.querySelectorAll("button").forEach(b => {
+    b.setAttribute("aria-pressed", b.dataset.e === ego);
+    b.onclick = () => { ego = b.dataset.e; renderDial(); render(); };
+  });
+}
+
+function render() {
+  const e = EGOS[ego];
+  document.documentElement.style.setProperty("--accent", e ? e.accent : "#1F5F4B");
+  document.documentElement.style.setProperty("--body", e && e.body === "mono" ? "var(--mono)" : "var(--serif)");
+  document.body.style.fontSize = ego === "analyst" ? "16px" : "";
+
+  const items = visible();
+  document.getElementById("state-line").textContent = smallHours
+    ? "It is the middle of the night where you are. Everything below is at reduced confidence."
+    : STATE.line;
+  document.getElementById("gauges").innerHTML = [
+    "energy " + bars(STATE.energy), "obsession " + bars(STATE.obsession),
+    "coffees " + STATE.coffees, "avoiding " + STATE.avoiding
+  ].map(s => `<span>${s}</span>`).join("");
+  document.getElementById("tally").textContent =
+    items.length + " entries · " + ITEMS.filter(i => life(i) > 0 && life(i) < .5).length + " fading";
+
+  document.getElementById("page").innerHTML = items.map(it => {
+    const notes = it.margin.slice();
+    notes.push(it.reupped ? "re-upped " + ago(it.reupped) : ago(it.at));
+    if (it.reupped) notes.push("first thought " + ago(it.at));
+    if (it.half) notes.push("fades in " + Math.max(1, Math.ceil(life(it) * it.half)) + "d");
+    return `
+    <article class="entry" id="e-${it.id}" style="opacity:${ink(it).toFixed(2)}">
+      <div class="margin mono">${notes.join("<br>")}</div>
+      <div class="text">
+        <p class="${e && e.body === "mono" ? "mono-body" : ""}">${it.body}</p>
+        ${it.struck ? `<div class="struck"><s>${it.struck}</s></div>` : ""}
+        ${it.note ? `<div class="note">${it.note}</div>` : ""}
+        ${it.scar ? `<div class="scar mono">someone pushed back — ${it.scar}</div>` : ""}
+      </div>
+    </article>`;
+  }).join("") ||
+    `<div class="entry"><div class="margin mono">nothing</div><div class="text"><p>Nothing survives that filter today. That is itself a reading.</p></div></div>`;
+
+  document.getElementById("foot").textContent =
+    (e ? e.rule + " · " : "") + "state set " + ago(STATE.updated) +
+    " · this page re-typesets itself when the dial moves";
+
+  buildReadings(); show(0);
+}
+
+function buildReadings() {
+  const items = visible();
+  const fresh = items.filter(i => now - clock(i) < DAY);
+  const dying = items.filter(i => life(i) > 0 && life(i) < .35);
+  const scarred = items.filter(i => i.scar);
+  readings = [{ kind: "current state", ref: null, text: STATE.line }];
+  if (fresh[0]) readings.push({ kind: (fresh[0].reupped ? "back from the dead · " : "just dropped · ") + ago(clock(fresh[0])), ref: fresh[0].id, text: fresh[0].body });
+  if (dying[0]) readings.push({ kind: "fading out", ref: dying[0].id, text: "This goes in " + Math.max(1, Math.ceil(life(dying[0]) * dying[0].half)) + " days: " + dying[0].body });
+  if (scarred[0]) readings.push({ kind: "someone pushed back", ref: scarred[0].id, text: "“" + scarred[0].scar + "”" });
+  readings.push({ kind: "take this with you", ref: null, text: "The cookbook you never cook from is still doing its job." });
+}
+
+function show(i) {
+  r = (i + readings.length) % readings.length;
+  const x = readings[r];
+  document.getElementById("bar-kind").textContent = x.kind;
+  document.getElementById("bar-line").textContent = x.text;
+  document.getElementById("bar-nav").innerHTML = (r + 1) + " / " + readings.length + "<br>" +
+    (x.ref ? "tap to read →" : "tap for next →");
+  if (!reduced && !touched) drain();
+}
+
+function drain() {
+  const d = document.getElementById("drain");
+  d.style.transition = "none"; d.style.width = "0";
+  requestAnimationFrame(() => { d.style.transition = "width 8s linear"; d.style.width = "100%"; });
+  clearTimeout(timer); timer = setTimeout(() => show(r + 1), 8000);
+}
+
+function advance() {
+  const x = readings[r];
+  if (!touched) { touched = true; clearTimeout(timer); document.getElementById("drain").style.width = "0"; }
+  if (x.ref) {
+    const el = document.getElementById("e-" + x.ref);
+    el.scrollIntoView({ behavior: reduced ? "auto" : "smooth", block: "center" });
+    el.classList.add("flash"); setTimeout(() => el.classList.remove("flash"), 1200);
+  }
+  show(r + 1);
+}
+document.getElementById("bar-in").onclick = advance;
+document.getElementById("bar-in").onkeydown = ev => {
+  if (ev.key === "Enter" || ev.key === " ") { ev.preventDefault(); advance(); }
+};
+</script>
