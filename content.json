@@ -1,29 +1,72 @@
 {
   "egos": {
-    "archivist": { "label": "the archivist", "accent": "#1F5F4B", "body": "serif", "rule": "Keeps receipts. Footnotes everything." },
-    "gremlin":   { "label": "the gremlin",   "accent": "#9C2A21", "body": "mono",  "rule": "Only awake after midnight. 20% confidence." },
-    "analyst":   { "label": "the analyst",   "accent": "#2B4B7A", "body": "serif", "rule": "Cold, numbered, slightly unkind." }
+    "archivist": {
+      "label": "the archivist",
+      "accent": "#1F5F4B",
+      "body": "serif",
+      "rule": "Keeps receipts. Footnotes everything."
+    },
+    "gremlin": {
+      "label": "the gremlin",
+      "accent": "#9C2A21",
+      "body": "mono",
+      "rule": "Only awake after midnight. 20% confidence."
+    },
+    "analyst": {
+      "label": "the analyst",
+      "accent": "#2B4B7A",
+      "body": "serif",
+      "rule": "Cold, numbered, slightly unkind."
+    }
   },
-
   "items": [
+    {
+      "id": "xms4c3l8v",
+      "kind": "thought",
+      "egos": [
+        "analyst"
+      ],
+      "done": "raw",
+      "half": 30,
+      "at": "2026-07-28T00:28:23",
+      "margin": [
+        "hour one",
+        "[raw]",
+        "built the thing that will hold it"
+      ],
+      "body": "Spent an hour building a site designed to be nothing like Instagram, and the first draft was Instagram. The grammar of the feed is so ambient now that you reproduce it by accident, in the exact act of trying to escape it.",
+      "note": "Rounded corners. That was the whole tell. Rounded corners and reverse-chronological order."
+    },
     {
       "id": "a1",
       "kind": "reading",
-      "egos": ["archivist"],
+      "egos": [
+        "archivist"
+      ],
       "done": "marinating",
       "half": null,
       "at": "2026-07-23T09:00:00",
-      "margin": ["p.140 / 350", "▓▓▓▓░░░░░░", "resentful"],
+      "margin": [
+        "p.140 / 350",
+        "▓▓▓▓░░░░░░",
+        "resentful"
+      ],
       "body": "A book I've started arguing with in the margins. I don't think he believes his own third chapter, and I've written so in pencil eleven times."
     },
     {
       "id": "a2",
       "kind": "opinion",
-      "egos": ["analyst", "archivist"],
+      "egos": [
+        "analyst",
+        "archivist"
+      ],
       "done": "medium",
       "half": null,
       "at": "2026-06-02T18:20:00",
-      "margin": ["opinion v3", "1 scar"],
+      "margin": [
+        "opinion v3",
+        "1 scar"
+      ],
       "body": "Most productivity systems are just anxiety with a user interface.",
       "struck": "v2 — all productivity systems are anxiety with a user interface.",
       "note": "Softened after losing an argument to someone who uses index cards.",
@@ -32,53 +75,78 @@
     {
       "id": "a3",
       "kind": "thought",
-      "egos": ["gremlin"],
+      "egos": [
+        "gremlin"
+      ],
       "done": "raw",
       "half": 4,
       "at": "2026-07-25T02:14:00",
-      "margin": ["02:14", "[raw]"],
+      "margin": [
+        "02:14",
+        "[raw]"
+      ],
       "body": "Every group chat has one person quietly keeping it alive, and it is never the person who talks most."
     },
     {
       "id": "a4",
       "kind": "receipt",
-      "egos": ["gremlin", "archivist"],
+      "egos": [
+        "gremlin",
+        "archivist"
+      ],
       "done": "raw",
       "half": 30,
       "at": "2026-07-25T21:52:00",
-      "margin": ["found in a pocket", "[raw]"],
+      "margin": [
+        "found in a pocket",
+        "[raw]"
+      ],
       "body": "A napkin diagram I no longer understand. Appears to be either a business model or a seating chart."
     },
     {
       "id": "a5",
       "kind": "dead",
-      "egos": ["archivist"],
+      "egos": [
+        "archivist"
+      ],
       "done": "burnt",
       "half": null,
       "at": "2025-08-14T12:00:00",
-      "margin": ["abandoned p.62"],
+      "margin": [
+        "abandoned p.62"
+      ],
       "body": "Cause of death: the author kept writing “as we shall see.” We did not, in fact, see."
     },
     {
       "id": "a6",
       "kind": "thread",
-      "egos": ["archivist", "analyst"],
+      "egos": [
+        "archivist",
+        "analyst"
+      ],
       "done": "medium",
       "half": null,
       "at": "2026-04-11T10:00:00",
-      "margin": ["thread 02 of 05", "drawn by hand"],
+      "margin": [
+        "thread 02 of 05",
+        "drawn by hand"
+      ],
       "body": "A 1970s cookbook I never cook from → an argument I lost about ritual versus output → I now make coffee badly, on purpose, every morning.",
       "note": "Three things I thought were unrelated for about nine years."
     },
     {
       "id": "a7",
       "kind": "thought",
-      "egos": ["analyst"],
+      "egos": [
+        "analyst"
+      ],
       "done": "marinating",
       "half": 14,
       "at": "2026-06-19T16:30:00",
       "reupped": "2026-07-24T08:10:00",
-      "margin": ["[marinating]"],
+      "margin": [
+        "[marinating]"
+      ],
       "body": "Nobody has ever described their own taste accurately. You can only be caught having it."
     }
   ]
