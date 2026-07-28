@@ -62,6 +62,16 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
   padding:12px 16px; font-size:12px; line-height:1.5}
 #say .lbl{display:block; margin-bottom:3px}
 .ok{color:var(--accent)} .bad{color:var(--warn)}
+
+.arc{padding:14px 0; border-bottom:1px solid var(--rule)}
+.arc .meta{color:var(--ink-3); font-size:10px; letter-spacing:.13em; text-transform:uppercase}
+.arc .txt{font-family:var(--serif); font-size:16px; line-height:1.45; margin:6px 0 10px}
+.arc .acts{display:flex; gap:8px; flex-wrap:wrap}
+.arc .acts button{background:none; border:1px solid var(--rule); padding:7px 11px; cursor:pointer;
+  font-family:var(--mono); font-size:11px; color:var(--ink-2)}
+.arc .acts button:hover{border-color:var(--ink-2); color:var(--ink)}
+.arc .acts button.kill{color:var(--warn); border-color:var(--warn)}
+.arc.busy{opacity:.4}
 </style>
 
 <div class="wrap">
@@ -89,6 +99,7 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
   <div class="tabs">
     <button data-t="entry" aria-pressed="true">drop an entry</button>
     <button data-t="state" aria-pressed="false">set your state</button>
+    <button data-t="archive" aria-pressed="false">the archive</button>
   </div>
 
   <form id="entry" onsubmit="return false">
@@ -175,6 +186,13 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
     <div class="hint">Do this more often than you post. It's four fields and it's the thing
       that makes the page feel inhabited.</div>
   </form>
+
+  <div id="archive" hidden>
+    <div class="hint" style="margin:14px 0 4px">Everything currently on the page, freshest ink first.
+      Removing takes it off the page — it stays in the repo's commit history forever.</div>
+    <div id="rows"></div>
+    <button class="post ghost" id="reload">reload from the repo</button>
+  </div>
 </div>
 
 <div id="say">
@@ -209,8 +227,8 @@ $("save").onclick = () => {
 
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-  $("entry").hidden = b.dataset.t !== "entry";
-  $("state").hidden = b.dataset.t !== "state";
+  ["entry","state","archive"].forEach(t => $(t).hidden = b.dataset.t !== t);
+  if (b.dataset.t === "archive") loadArchive();
 });
 
 /* ── github plumbing ───────────────────────────────────────── */
@@ -345,4 +363,64 @@ $("post-state").onclick = async () => {
   } catch (e) { say(e.message, "bad"); }
   $("post-state").disabled = false;
 };
+
+/* ── the archive: remove, re-up, let things fade ───────────── */
+const DAY = 864e5;
+const life = it => it.half
+  ? Math.max(0, Math.min(1, 1 - (Date.now() - new Date(it.reupped || it.at)) / (it.half * DAY)))
+  : 1;
+
+async function loadArchive() {
+  say("Reading the archive…");
+  try {
+    const { data } = await readFile("content.json");
+    const items = data.items.slice().sort((a, b) => life(b) - life(a) ||
+      new Date(b.reupped || b.at) - new Date(a.reupped || a.at));
+    $("rows").innerHTML = items.map(it => {
+      const days = it.half ? Math.max(1, Math.ceil(life(it) * it.half)) + "d left" : "permanent";
+      const when = (it.reupped ? "re-upped " : "") + (it.reupped || it.at).slice(0, 10);
+      return `<div class="arc" id="r-${it.id}">
+        <div class="meta">${it.kind} · ${it.done} · ${days} · ${when}</div>
+        <div class="txt">${it.body.length > 130 ? it.body.slice(0, 130) + "…" : it.body}</div>
+        <div class="acts">
+          <button data-a="reup" data-id="${it.id}">re-up</button>
+          <button data-a="fade" data-id="${it.id}">let it fade</button>
+          <button data-a="kill" data-id="${it.id}" class="kill">remove</button>
+        </div></div>`;
+    }).join("") || `<div class="hint">Nothing on the page yet.</div>`;
+
+    $("rows").querySelectorAll("button").forEach(b =>
+      b.onclick = () => act(b.dataset.a, b.dataset.id));
+    say(items.length + " entries.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+}
+
+async function act(what, id) {
+  if (what === "kill" && !confirm("Take this off the page? It stays in the repo's history.")) return;
+  const row = $("r-" + id); if (row) row.classList.add("busy");
+  say("Committing…");
+  try {
+    const { sha, data } = await readFile("content.json");
+    const it = data.items.find(x => x.id === id);
+    if (!it) throw new Error("that entry is already gone");
+    let msg;
+    if (what === "kill") {
+      data.items = data.items.filter(x => x.id !== id);
+      msg = "remove: " + it.body.slice(0, 50);
+    } else if (what === "reup") {
+      it.reupped = stamp(new Date());
+      msg = "re-up: " + it.body.slice(0, 50);
+    } else {
+      it.half = it.half ? Math.max(1, Math.round(it.half / 2)) : 7;
+      it.reupped = undefined;
+      msg = "fade: " + it.body.slice(0, 50);
+    }
+    await writeFile("content.json", data, sha, msg);
+    say(what === "kill" ? "Removed. Gone from the page in thirty seconds."
+      : what === "reup" ? "Back from the dead. Clock reset, birthday kept."
+      : "Shortened. It'll go quietly.", "ok");
+    loadArchive();
+  } catch (e) { say(e.message, "bad"); if (row) row.classList.remove("busy"); }
+}
+$("reload").onclick = loadArchive;
 </script>
