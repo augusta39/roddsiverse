@@ -56,6 +56,14 @@ header{border-top:2px solid var(--ink); padding-top:9px}
   color:var(--ink-2); font-size:14px; line-height:1.5}
 .entry.flash{background:var(--paper-2)}
 
+.plate{margin:12px 0 0; max-width:330px}
+.plate img{display:block; width:100%; height:auto; border:1px solid var(--rule); padding:5px;
+  filter:grayscale(1) contrast(1.06); cursor:zoom-in; transition:filter .45s ease}
+.plate.developed img{filter:none; cursor:zoom-out}
+.plate figcaption{font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
+  color:var(--ink-3); margin-top:6px; line-height:1.7}
+@media (prefers-reduced-motion:reduce){ .plate img{transition:none} }
+
 .foot{padding:20px 0 30px; color:var(--ink-3); line-height:2.1}
 
 #bar{position:sticky; bottom:0; background:var(--paper); border-top:2px solid var(--ink); z-index:5}
@@ -190,6 +198,9 @@ function render() {
       <div class="margin mono">${notes.join("<br>")}</div>
       <div class="text">
         <p class="${e && e.body === "mono" ? "mono-body" : ""}">${it.body}</p>
+        ${it.img ? `<figure class="plate">
+          <img src="${it.img}" alt="${(it.alt || "an attached image").replace(/"/g, "&quot;")}" loading="lazy">
+          <figcaption>plate — ${it.alt || "tap to develop"}</figcaption></figure>` : ""}
         ${it.struck ? `<div class="struck"><s>${it.struck}</s></div>` : ""}
         ${it.note ? `<div class="note">${it.note}</div>` : ""}
         ${it.scar ? `<div class="scar mono">someone pushed back — ${it.scar}</div>` : ""}
@@ -197,6 +208,9 @@ function render() {
     </article>`;
   }).join("") ||
     `<div class="entry"><div class="margin mono">nothing</div><div class="text"><p>Nothing survives that filter today. That is itself a reading.</p></div></div>`;
+
+  document.querySelectorAll(".plate").forEach(p =>
+    p.onclick = () => p.classList.toggle("developed"));
 
   document.getElementById("foot").textContent =
     (e ? e.rule + " · " : "") + "state set " + ago(STATE.updated) +

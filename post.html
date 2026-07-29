@@ -72,6 +72,11 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
 .arc .acts button:hover{border-color:var(--ink-2); color:var(--ink)}
 .arc .acts button.kill{color:var(--warn); border-color:var(--warn)}
 .arc.busy{opacity:.4}
+
+#peek{margin-top:10px}
+#peek img{max-width:150px; height:auto; display:block; border:1px solid var(--rule); padding:4px;
+  filter:grayscale(1) contrast(1.06)}
+#peek div{color:var(--ink-3); font-size:11px; margin-top:5px}
 </style>
 
 <div class="wrap">
@@ -135,6 +140,14 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
         <option value="90">a season</option>
         <option value="">forever</option>
       </select>
+    </div>
+    <div class="field">
+      <span class="lbl">evidence</span>
+      <input id="pic" type="file" accept="image/*" style="border:0; padding:0; font-size:13px">
+      <input id="alt" placeholder="what it is — used as the caption" style="margin-top:9px">
+      <div id="peek"></div>
+      <div class="hint">Shrunk to 1400px in your browser before it's committed. Renders as a
+        greyscale plate on the page; readers tap it to see it in colour.</div>
     </div>
     <div class="field">
       <span class="lbl">whose is it</span>
@@ -210,7 +223,10 @@ const store = {
 
 ["owner","repo","branch","token"].forEach(k => $(k).value = store.get("n412." + k));
 if (!$("branch").value) $("branch").value = "main";
-if (!$("owner").value) $("cfg").open = true;
+if (!$("owner").value || !$("token").value) {
+  $("cfg").open = true;
+  setTimeout(() => say("No key saved on this device. Fill in the three fields above.", "bad"), 0);
+}
 
 $("save").onclick = () => {
   ["owner","repo","branch","token"].forEach(k => store.set("n412." + k, $(k).value.trim()));
@@ -251,9 +267,16 @@ const dec = b64 => new TextDecoder().decode(
 
 async function readFile(path) {
   const c = cfg();
-  const res = await fetch(api(path) + "?ref=" + c.branch + "&t=" + Date.now(), {
-    headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json" }
-  });
+  if (!c.owner || !c.repo || !c.token)
+    throw new Error("Fill in your username, repo and key above, then tap save.");
+  let res;
+  try {
+    res = await fetch(api(path) + "?ref=" + c.branch + "&t=" + Date.now(), {
+      headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json" }
+    });
+  } catch (e) {
+    throw new Error("Couldn't reach GitHub — check your connection, VPN or content blocker.");
+  }
   if (!res.ok) throw new Error(path + " — " + (res.status === 404 ? "not found in that repo" :
     res.status === 401 ? "the key was rejected" : "GitHub said " + res.status));
   const j = await res.json();
@@ -262,14 +285,21 @@ async function readFile(path) {
 
 async function writeFile(path, obj, sha, message) {
   const c = cfg();
-  const res = await fetch(api(path), {
-    method: "PUT",
-    headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json",
-               "Content-Type": "application/json" },
-    body: JSON.stringify({ message, content: enc(JSON.stringify(obj, null, 2) + "\n"),
-                           sha, branch: c.branch })
-  });
-  if (!res.ok) throw new Error("couldn't commit — GitHub said " + res.status);
+  let res;
+  try {
+    res = await fetch(api(path), {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json",
+                 "Content-Type": "application/json" },
+      body: JSON.stringify({ message, content: enc(JSON.stringify(obj, null, 2) + "\n"),
+                             sha, branch: c.branch })
+    });
+  } catch (e) {
+    throw new Error("Couldn't reach GitHub — check your connection, VPN or content blocker.");
+  }
+  if (!res.ok) throw new Error(res.status === 403
+    ? "the key can read but not write — set Contents to read and write"
+    : "couldn't commit — GitHub said " + res.status);
 }
 
 /* ── egos come from the repo, not from here ────────────────── */
@@ -322,13 +352,70 @@ function buildEntry() {
   return it;
 }
 function clearEntry() {
-  ["body","margin","struck","note","scar"].forEach(k => $(k).value = "");
+  ["body","margin","struck","note","scar","alt"].forEach(k => $(k).value = "");
+  $("pic").value = ""; $("peek").innerHTML = ""; shot = null;
+}
+
+/* ── evidence: shrink in the browser, commit as a real file ── */
+let shot = null;
+
+function shrink(file, max = 1400, q = .82) {
+  return new Promise((ok, bad) => {
+    const img = new Image(), url = URL.createObjectURL(file);
+    img.onload = () => {
+      const s = Math.min(1, max / Math.max(img.width, img.height));
+      const c = document.createElement("canvas");
+      c.width = Math.round(img.width * s); c.height = Math.round(img.height * s);
+      c.getContext("2d").drawImage(img, 0, 0, c.width, c.height);
+      URL.revokeObjectURL(url);
+      ok(c.toDataURL("image/jpeg", q).split(",")[1]);
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); bad(new Error("couldn't read that image")); };
+    img.src = url;
+  });
+}
+
+$("pic").onchange = async () => {
+  const f = $("pic").files[0];
+  shot = null; $("peek").innerHTML = "";
+  if (!f) return;
+  say("Shrinking…");
+  try {
+    const b64 = await shrink(f);
+    const kb = Math.round(b64.length * .75 / 1024);
+    if (kb > 900) { say("Still " + kb + "KB after shrinking — try a smaller image.", "bad"); return; }
+    shot = b64;
+    $("peek").innerHTML = `<img src="data:image/jpeg;base64,${b64}" alt="preview of the image you picked">
+      <div>${kb}KB, ready</div>`;
+    say("Evidence attached.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+};
+
+async function writeBinary(path, b64, message) {
+  const c = cfg();
+  let res;
+  try {
+    res = await fetch(api(path), {
+      method: "PUT",
+      headers: { Authorization: "Bearer " + c.token, Accept: "application/vnd.github+json",
+                 "Content-Type": "application/json" },
+      body: JSON.stringify({ message, content: b64, branch: c.branch })
+    });
+  } catch (e) { throw new Error("Couldn't reach GitHub — check your connection."); }
+  if (!res.ok) throw new Error("couldn't upload the image — GitHub said " + res.status);
 }
 
 $("post-entry").onclick = async () => {
   const it = buildEntry(); if (!it) return;
-  $("post-entry").disabled = true; say("Committing…");
+  $("post-entry").disabled = true; say(shot ? "Uploading the evidence…" : "Committing…");
   try {
+    if (shot) {
+      const path = "media/" + it.id + ".jpg";
+      await writeBinary(path, shot, "evidence: " + it.id);
+      it.img = path;
+      it.alt = $("alt").value.trim() || "an attached image";
+      say("Committing the entry…");
+    }
     const { sha, data } = await readFile("content.json");
     data.items.unshift(it);
     await writeFile("content.json", data, sha, "drop: " + it.body.slice(0, 60));
