@@ -92,7 +92,7 @@ header{border-top:2px solid var(--ink); padding-top:9px}
 <div class="wrap">
   <header>
     <div class="head-row mono">
-      <span>No. <span id="issue">412</span> — issued continuously</span>
+      <span id="issue">…</span>
       <span class="dial" id="dial"></span>
       <span id="tally"></span>
     </div>
@@ -176,6 +176,14 @@ function render() {
   document.documentElement.style.setProperty("--accent", e ? e.accent : "#1F5F4B");
   document.documentElement.style.setProperty("--body", e && e.body === "mono" ? "var(--mono)" : "var(--serif)");
   document.body.style.fontSize = ego === "analyst" ? "16px" : "";
+
+  const m = STATE.masthead || {};
+  const issue = m.issue || (m.since
+    ? Math.max(1, Math.floor((now - new Date(m.since)) / DAY) + 1)
+    : ITEMS.length);
+  document.getElementById("issue").textContent =
+    [m.name, "No. " + issue, m.tagline].filter(Boolean).join(" — ");
+  document.title = (m.name ? m.name + " — " : "") + "No. " + issue;
 
   const items = visible();
   document.getElementById("state-line").textContent = smallHours

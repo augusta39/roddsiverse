@@ -1,13 +1,25 @@
 {
-  "updated": "2026-07-28T23:02:23",
+  "updated": "2026-07-25T23:41:00",
+
+  "masthead": {
+    "name": "roddsiverse",
+    "tagline": "issued continuously",
+    "since": "2026-07-28"
+  },
+
   "line": "Two coffees deep. Forty percent through a book I resent.",
   "energy": 3,
   "obsession": 5,
   "coffees": 2,
   "avoiding": "taxes",
-  "pinned": [],
+
+  "pinned": [
+    { "kind": "standing notice", "text": "Yes, I'm open to being sent things. No, not your newsletter." }
+  ],
+
   "tokens": [
-    "Smile when you read it. That's it. No clickbait.",
-    "Voice is taking us by storm. So is robotics. Excited for what's in store >_<"
+    "The cookbook you never cook from is still doing its job.",
+    "Go and reread the thing you loved at nineteen. It will not hold up, and that's the interesting part.",
+    "You are allowed to abandon a book at page sixty-two."
   ]
 }

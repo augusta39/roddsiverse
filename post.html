@@ -180,6 +180,15 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
 
   <form id="state" hidden onsubmit="return false">
     <div class="field">
+      <span class="lbl">masthead</span>
+      <div class="row">
+        <input id="m-name" placeholder="what it's called">
+        <input id="m-tag" placeholder="tagline, e.g. issued continuously">
+      </div>
+      <div class="hint">The issue number counts days since you started — it goes up on its own.
+        Put a plain number in <code>masthead.issue</code> in state.json if you'd rather fix it.</div>
+    </div>
+    <div class="field">
       <span class="lbl">the readout</span>
       <textarea id="s-line" style="min-height:80px" placeholder="Two coffees deep. Avoiding taxes with real commitment."></textarea>
     </div>
@@ -270,7 +279,22 @@ document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
   ["entry","state","archive","footer"].forEach(t => $(t).hidden = b.dataset.t !== t);
   if (b.dataset.t === "archive") loadArchive();
   if (b.dataset.t === "footer") loadFooter();
+  if (b.dataset.t === "state") loadState();
 });
+
+async function loadState() {
+  try {
+    const { data } = await readFile("state.json");
+    const m = data.masthead || {};
+    $("m-name").value = m.name || ""; $("m-tag").value = m.tagline || "";
+    $("s-line").value = data.line || "";
+    $("s-energy").value = data.energy ?? 3;
+    $("s-obsession").value = data.obsession ?? 3;
+    $("s-coffees").value = data.coffees ?? 0;
+    $("s-avoiding").value = data.avoiding || "";
+    say("Showing what's live now.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+}
 
 /* ── github plumbing ───────────────────────────────────────── */
 const cfg = () => ({
@@ -464,6 +488,11 @@ $("post-state").onclick = async () => {
     const { sha, data } = await readFile("state.json");
     const s = Object.assign({}, data, {
       updated: stamp(new Date()),
+      masthead: Object.assign({}, data.masthead, {
+        name: $("m-name").value.trim(),
+        tagline: $("m-tag").value.trim(),
+        since: (data.masthead && data.masthead.since) || stamp(new Date()).slice(0, 10)
+      }),
       line: $("s-line").value.trim(),
       energy: Number($("s-energy").value),
       obsession: Number($("s-obsession").value),
