@@ -35,23 +35,6 @@
       "body": "Books stands tall, guarding secrets\nThe rest of us lean in for the beautiful lies",
       "img": "media/xms5nxuqe.jpg",
       "alt": "Shelfwhispers"
-    },
-    {
-      "id": "xms4c3l8v",
-      "kind": "thought",
-      "egos": [
-        "analyst"
-      ],
-      "done": "raw",
-      "half": 30,
-      "at": "2026-07-28T00:28:23",
-      "margin": [
-        "hour one",
-        "[raw]",
-        "built the thing that will hold it"
-      ],
-      "body": "Spent an hour building a site designed to be nothing like Instagram, and the first draft was Instagram. The grammar of the feed is so ambient now that you reproduce it by accident, in the exact act of trying to escape it.",
-      "note": "Rounded corners. That was the whole tell. Rounded corners and reverse-chronological order."
     }
   ]
 }
