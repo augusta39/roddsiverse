@@ -105,6 +105,7 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
     <button data-t="entry" aria-pressed="true">drop an entry</button>
     <button data-t="state" aria-pressed="false">set your state</button>
     <button data-t="archive" aria-pressed="false">the archive</button>
+    <button data-t="footer" aria-pressed="false">the footer</button>
   </div>
 
   <form id="entry" onsubmit="return false">
@@ -206,6 +207,29 @@ input:focus,textarea:focus,select:focus{outline:none; border-color:var(--accent)
     <div id="rows"></div>
     <button class="post ghost" id="reload">reload from the repo</button>
   </div>
+
+  <div id="footer" hidden>
+    <div class="hint" style="margin:14px 0 4px">The bar at the bottom of the page. Four readings
+      build themselves — your state, anything new, anything fading, any push-back. These two are yours.</div>
+
+    <div class="field">
+      <span class="lbl">pinned readings — always in the rotation</span>
+      <div id="pins"></div>
+      <div class="row" style="margin-top:9px">
+        <input id="p-kind" placeholder="label, e.g. standing notice">
+        <input id="p-text" placeholder="the line itself">
+      </div>
+      <button class="post ghost" id="add-pin">add this reading</button>
+    </div>
+
+    <div class="field" style="border:0">
+      <span class="lbl">exit tokens — one picked at random per visit</span>
+      <div id="toks"></div>
+      <input id="t-text" placeholder="something for them to leave with" style="margin-top:9px">
+      <button class="post ghost" id="add-tok">add this token</button>
+      <div class="hint">This is the line people screenshot. Write a few and let the site deal them out.</div>
+    </div>
+  </div>
 </div>
 
 <div id="say">
@@ -243,8 +267,9 @@ $("save").onclick = () => {
 
 document.querySelectorAll(".tabs button").forEach(b => b.onclick = () => {
   document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-pressed", x === b));
-  ["entry","state","archive"].forEach(t => $(t).hidden = b.dataset.t !== t);
+  ["entry","state","archive","footer"].forEach(t => $(t).hidden = b.dataset.t !== t);
   if (b.dataset.t === "archive") loadArchive();
+  if (b.dataset.t === "footer") loadFooter();
 });
 
 /* ── github plumbing ───────────────────────────────────────── */
@@ -436,19 +461,69 @@ $("post-state").onclick = async () => {
   if (!$("s-line").value.trim()) { say("The readout is empty.", "bad"); return; }
   $("post-state").disabled = true; say("Committing…");
   try {
-    const { sha } = await readFile("state.json");
-    const s = {
+    const { sha, data } = await readFile("state.json");
+    const s = Object.assign({}, data, {
       updated: stamp(new Date()),
       line: $("s-line").value.trim(),
       energy: Number($("s-energy").value),
       obsession: Number($("s-obsession").value),
       coffees: Number($("s-coffees").value || 0),
       avoiding: $("s-avoiding").value.trim()
-    };
+    });
     await writeFile("state.json", s, sha, "state: " + s.line.slice(0, 50));
     say("State set. The bar reads differently now.", "ok");
   } catch (e) { say(e.message, "bad"); }
   $("post-state").disabled = false;
+};
+
+/* ── the footer bar: pinned readings and exit tokens ───────── */
+async function loadFooter() {
+  say("Reading the footer…");
+  try {
+    const { data } = await readFile("state.json");
+    const pins = data.pinned || [], toks = data.tokens || [];
+    $("pins").innerHTML = pins.length ? pins.map((p, i) =>
+      `<div class="arc" style="padding:10px 0">
+        <div class="meta">${p.kind || "notice"}</div>
+        <div class="txt">${p.text}</div>
+        <div class="acts"><button class="kill" data-p="${i}">remove</button></div>
+      </div>`).join("") : `<div class="hint">None. The bar runs on automatics alone.</div>`;
+    $("toks").innerHTML = toks.length ? toks.map((t, i) =>
+      `<div class="arc" style="padding:10px 0">
+        <div class="txt">${t}</div>
+        <div class="acts"><button class="kill" data-k="${i}">remove</button></div>
+      </div>`).join("") : `<div class="hint">None. Nobody leaves with anything.</div>`;
+    $("pins").querySelectorAll("button").forEach(b => b.onclick = () => editFooter("pinned", "cut", +b.dataset.p));
+    $("toks").querySelectorAll("button").forEach(b => b.onclick = () => editFooter("tokens", "cut", +b.dataset.k));
+    say(pins.length + " pinned · " + toks.length + " tokens.", "ok");
+  } catch (e) { say(e.message, "bad"); }
+}
+
+async function editFooter(list, how, payload) {
+  say("Committing…");
+  try {
+    const { sha, data } = await readFile("state.json");
+    data[list] = data[list] || [];
+    if (how === "cut") data[list].splice(payload, 1);
+    else data[list].push(payload);
+    data.updated = stamp(new Date());
+    await writeFile("state.json", data, sha, "footer: " + how + " " + list);
+    say(how === "cut" ? "Removed from the bar." : "Added to the bar.", "ok");
+    loadFooter();
+  } catch (e) { say(e.message, "bad"); }
+}
+
+$("add-pin").onclick = () => {
+  const text = $("p-text").value.trim();
+  if (!text) { say("Nothing to pin.", "bad"); return; }
+  editFooter("pinned", "add", { kind: $("p-kind").value.trim() || "notice", text });
+  $("p-kind").value = ""; $("p-text").value = "";
+};
+$("add-tok").onclick = () => {
+  const text = $("t-text").value.trim();
+  if (!text) { say("Nothing to give them.", "bad"); return; }
+  editFooter("tokens", "add", text);
+  $("t-text").value = "";
 };
 
 /* ── the archive: remove, re-up, let things fade ───────────── */

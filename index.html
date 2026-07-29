@@ -225,10 +225,14 @@ function buildReadings() {
   const dying = items.filter(i => life(i) > 0 && life(i) < .35);
   const scarred = items.filter(i => i.scar);
   readings = [{ kind: "current state", ref: null, text: STATE.line }];
+  (STATE.pinned || []).forEach(p =>
+    readings.push({ kind: p.kind || "notice", ref: p.ref || null, text: p.text }));
   if (fresh[0]) readings.push({ kind: (fresh[0].reupped ? "back from the dead · " : "just dropped · ") + ago(clock(fresh[0])), ref: fresh[0].id, text: fresh[0].body });
   if (dying[0]) readings.push({ kind: "fading out", ref: dying[0].id, text: "This goes in " + Math.max(1, Math.ceil(life(dying[0]) * dying[0].half)) + " days: " + dying[0].body });
   if (scarred[0]) readings.push({ kind: "someone pushed back", ref: scarred[0].id, text: "“" + scarred[0].scar + "”" });
-  readings.push({ kind: "take this with you", ref: null, text: "The cookbook you never cook from is still doing its job." });
+  const toks = (STATE.tokens || []).filter(Boolean);
+  if (toks.length) readings.push({ kind: "take this with you", ref: null,
+    text: toks[Math.floor(Math.random() * toks.length)] });
 }
 
 function show(i) {

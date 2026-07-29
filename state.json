@@ -4,5 +4,15 @@
   "energy": 3,
   "obsession": 5,
   "coffees": 2,
-  "avoiding": "taxes"
+  "avoiding": "taxes",
+
+  "pinned": [
+    { "kind": "standing notice", "text": "Yes, I'm open to being sent things. No, not your newsletter." }
+  ],
+
+  "tokens": [
+    "The cookbook you never cook from is still doing its job.",
+    "Go and reread the thing you loved at nineteen. It will not hold up, and that's the interesting part.",
+    "You are allowed to abandon a book at page sixty-two."
+  ]
 }
