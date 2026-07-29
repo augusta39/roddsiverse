@@ -51,21 +51,6 @@
         "[raw]"
       ],
       "body": "Every group chat has one person quietly keeping it alive, and it is never the person who talks most."
-    },
-    {
-      "id": "a7",
-      "kind": "thought",
-      "egos": [
-        "analyst"
-      ],
-      "done": "marinating",
-      "half": 14,
-      "at": "2026-06-19T16:30:00",
-      "reupped": "2026-07-24T08:10:00",
-      "margin": [
-        "[marinating]"
-      ],
-      "body": "Nobody has ever described their own taste accurately. You can only be caught having it."
     }
   ]
 }
