@@ -21,6 +21,22 @@
   },
   "items": [
     {
+      "id": "xms5nxuqe",
+      "kind": "thought",
+      "egos": [
+        "archivist"
+      ],
+      "done": "marinating",
+      "half": 4,
+      "at": "2026-07-28T22:47:37",
+      "margin": [
+        "[marinating]"
+      ],
+      "body": "Books stands tall, guarding secrets\nThe rest of us lean in for the beautiful lies",
+      "img": "media/xms5nxuqe.jpg",
+      "alt": "Shelfwhispers"
+    },
+    {
       "id": "xms4c3l8v",
       "kind": "thought",
       "egos": [
