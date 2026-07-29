@@ -64,13 +64,13 @@ header{border-top:2px solid var(--ink); padding-top:9px}
   color:var(--ink-2); font-size:14px; line-height:1.5}
 .entry.flash{background:var(--paper-2)}
 
-.plate{float:right; margin:4px 0 12px 24px; max-width:44%; width:250px}
-.plate img{display:block; width:100%; height:auto; border:1px solid var(--rule); padding:5px;
+.plate{margin:14px 0 0; max-width:330px}
+.plate img{display:block; width:100%; height:auto;
+  border:1px solid var(--rule); padding:5px;
   filter:grayscale(1) contrast(1.06); cursor:zoom-in; transition:filter .45s ease}
 .plate.developed img{filter:none; cursor:zoom-out}
 .plate figcaption{font-family:var(--mono); font-size:10px; letter-spacing:.13em; text-transform:uppercase;
   color:var(--ink-3); margin-top:6px; line-height:1.7}
-.entry .text::after{content:""; display:block; clear:both}
 @media (prefers-reduced-motion:reduce){ .plate img{transition:none} }
 
 .foot{padding:20px 0 30px; color:var(--ink-3); line-height:2.1}
@@ -94,7 +94,7 @@ header{border-top:2px solid var(--ink); padding-top:9px}
   .state p{font-size:20px}
   .entry .text p{font-size:17px}
   .bar-line{font-size:14px}
-  .plate{float:none; margin:12px 0 0; width:100%; max-width:100%}
+  .plate{max-width:100%}
 }
 @media (prefers-reduced-motion:reduce){ .drain{display:none} }
 </style>
@@ -142,6 +142,7 @@ const grab = f => fetch(f + "?v=" + Date.now())
 Promise.all([grab("state.json"), grab("content.json")])
   .then(([s, c]) => {
     STATE = s; EGOS = c.egos; ITEMS = c.items;
+    if (soloVoice()) ego = Object.keys(EGOS)[0] || "all";
     renderDial(); render();
   })
   .catch(err => {
@@ -167,15 +168,17 @@ const life = it => {
 const ink = it => 0.3 + 0.7 * life(it);
 const bars = n => "▓".repeat(n) + "░".repeat(6 - n);
 const visible = () => ITEMS
-  .filter(i => ego === "all" || i.egos.includes(ego))
+  .filter(i => soloVoice() || ego === "all" || i.egos.includes(ego))
   .filter(i => life(i) > 0)
   .sort((a, b) => life(b) - life(a) || clock(b) - clock(a));
 
 const lenses = () => ["all"].concat(Object.keys(EGOS));
 const lensName = k => k === "all" ? "everything" : (EGOS[k] ? EGOS[k].label : k);
+const soloVoice = () => Object.keys(EGOS).length < 2;
 
 function renderDial() {
   const d = document.getElementById("dial");
+  if (soloVoice()) { d.innerHTML = ""; return; }
   const L = lenses(), next = L[(L.indexOf(ego) + 1) % L.length];
   d.innerHTML = `<button id="lens" aria-label="Reading as ${lensName(ego)}. Tap to read as ${lensName(next)} instead.">read as <b>${lensName(ego)}</b> &#8635;</button>`;
   document.getElementById("lens").onclick = () => { ego = next; renderDial(); render(); };
@@ -234,10 +237,10 @@ function render() {
     <article class="entry" id="e-${it.id}" style="opacity:${ink(it).toFixed(2)}">
       <div class="margin mono">${notes.join("<br>")}</div>
       <div class="text">
+        <p class="${e && e.body === "mono" ? "mono-body" : ""}">${it.body}</p>
         ${it.img ? `<figure class="plate">
           <img src="${it.img}" alt="${(it.alt || "an attached image").replace(/"/g, "&quot;")}" loading="lazy">
           <figcaption>plate — ${it.alt || "tap to develop"}</figcaption></figure>` : ""}
-        <p class="${e && e.body === "mono" ? "mono-body" : ""}">${it.body}</p>
         ${it.struck ? `<div class="struck"><s>${it.struck}</s></div>` : ""}
         ${it.note ? `<div class="note">${it.note}</div>` : ""}
         ${it.scar ? `<div class="scar mono">someone pushed back — ${it.scar}</div>` : ""}
