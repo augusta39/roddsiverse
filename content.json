@@ -38,25 +38,6 @@
       "note": "Rounded corners. That was the whole tell. Rounded corners and reverse-chronological order."
     },
     {
-      "id": "a2",
-      "kind": "opinion",
-      "egos": [
-        "analyst",
-        "archivist"
-      ],
-      "done": "medium",
-      "half": null,
-      "at": "2026-06-02T18:20:00",
-      "margin": [
-        "opinion v3",
-        "1 scar"
-      ],
-      "body": "Most productivity systems are just anxiety with a user interface.",
-      "struck": "v2 — all productivity systems are anxiety with a user interface.",
-      "note": "Softened after losing an argument to someone who uses index cards.",
-      "scar": "index cards are not anxiety, they are furniture."
-    },
-    {
       "id": "a3",
       "kind": "thought",
       "egos": [
