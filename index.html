@@ -48,7 +48,15 @@ header{border-top:2px solid var(--ink); padding-top:9px}
 .entry .margin{color:var(--ink-3); text-align:right; line-height:2}
 .entry .text{max-width:var(--measure)}
 .entry .text p{margin:0; font-size:18px; line-height:1.55; font-weight:400}
-.entry .text p.mono-body{font-family:var(--mono); font-size:15px; letter-spacing:0; text-transform:none; line-height:1.7}
+
+:root[data-face="mono"]{--measure:52ch}
+:root[data-face="mono"] .state p{font-size:19px; line-height:1.5; letter-spacing:0}
+:root[data-face="mono"] .entry .text p{font-size:15px; line-height:1.7}
+:root[data-face="mono"] .entry .struck{font-size:12.5px}
+:root[data-face="mono"] .entry .note{font-size:12.5px}
+:root[data-face="mono"] .entry .scar{font-size:12px}
+:root[data-face="mono"] .bar-line{font-size:14px; line-height:1.5}
+.entry .text p.mono-body{letter-spacing:0; text-transform:none}
 .entry .struck{margin-top:7px; color:var(--ink-3); font-size:15px; line-height:1.5}
 .entry .struck s{text-decoration-thickness:1px}
 .entry .note{margin-top:7px; color:var(--ink-2); font-size:15px; line-height:1.5; font-style:italic}
@@ -171,10 +179,29 @@ function renderDial() {
   });
 }
 
+/* accents are authored for paper; at night they need lifting to stay legible */
+const darkMode = matchMedia("(prefers-color-scheme:dark)").matches;
+const rgb = h => [1, 3, 5].map(i => parseInt(h.substr(i, 2), 16));
+const lum = h => { const c = rgb(h).map(v => v / 255)
+  .map(v => v <= .03928 ? v / 12.92 : Math.pow((v + .055) / 1.055, 2.4));
+  return .2126 * c[0] + .7152 * c[1] + .0722 * c[2]; };
+const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((p, q) => q - p);
+  return (x + .05) / (y + .05); };
+const hex = n => Math.round(Math.max(0, Math.min(255, n))).toString(16).padStart(2, "0");
+const lighten = (h, t) => "#" + rgb(h).map(v => hex(v + (255 - v) * t)).join("");
+function fit(h) {
+  if (!darkMode || !/^#[0-9a-f]{6}$/i.test(h)) return h;
+  let c = h, i = 0;
+  while (ratio(c, "#141513") < 4.5 && i++ < 14) c = lighten(c, .1);
+  return c;
+}
+
 function render() {
   const e = EGOS[ego];
-  document.documentElement.style.setProperty("--accent", e ? e.accent : "#1F5F4B");
-  document.documentElement.style.setProperty("--body", e && e.body === "mono" ? "var(--mono)" : "var(--serif)");
+  const mono = !!(e && e.body === "mono");
+  document.documentElement.dataset.face = mono ? "mono" : "serif";
+  document.documentElement.style.setProperty("--accent", fit(e ? e.accent : "#1F5F4B"));
+  document.documentElement.style.setProperty("--body", mono ? "var(--mono)" : "var(--serif)");
   document.body.style.fontSize = ego === "analyst" ? "16px" : "";
 
   const m = STATE.masthead || {};
