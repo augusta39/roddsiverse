@@ -21,6 +21,22 @@
   },
   "items": [
     {
+      "id": "xms5r1yto",
+      "kind": "opinion",
+      "egos": [
+        "archivist"
+      ],
+      "done": "marinating",
+      "half": 90,
+      "at": "2026-07-29T00:14:47",
+      "margin": [
+        "[marinating]"
+      ],
+      "body": "Heaven landed upon us!",
+      "img": "media/xms5r1yto.jpg",
+      "alt": "an attached image"
+    },
+    {
       "id": "xms5nxuqe",
       "kind": "thought",
       "egos": [
